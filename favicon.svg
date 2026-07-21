@@ -1,0 +1,26 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="200" height="200" rx="44" fill="#101114"/>
+
+  <!-- six blades radiating from center, forming a star -->
+  <g stroke="#3ECF8E" stroke-width="7" stroke-linecap="round">
+    <line x1="100" y1="100" x2="100" y2="12"/>
+    <line x1="100" y1="100" x2="176.2" y2="56"/>
+    <line x1="100" y1="100" x2="176.2" y2="144"/>
+    <line x1="100" y1="100" x2="100" y2="188"/>
+    <line x1="100" y1="100" x2="23.8" y2="144"/>
+    <line x1="100" y1="100" x2="23.8" y2="56"/>
+  </g>
+
+  <!-- finger loops, one pair per scissor -->
+  <g fill="#101114" stroke="#3ECF8E" stroke-width="4">
+    <circle cx="100" cy="60" r="9"/>
+    <circle cx="134.6" cy="80" r="9"/>
+    <circle cx="134.6" cy="120" r="9"/>
+    <circle cx="100" cy="140" r="9"/>
+    <circle cx="65.4" cy="120" r="9"/>
+    <circle cx="65.4" cy="80" r="9"/>
+  </g>
+
+  <!-- shared pivot -->
+  <circle cx="100" cy="100" r="7" fill="#3ECF8E"/>
+</svg>
