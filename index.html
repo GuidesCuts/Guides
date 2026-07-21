@@ -20,8 +20,8 @@
     --accent:#1FA971;
     --accent-soft:#E3F6EC;
     --accent-dark:#15754C;
-    --warn:#E0742E;
-    --warn-soft:#FDECDF;
+    --warn:#C98A5E;
+    --warn-soft:#FBF1E8;
     --danger:#D64545;
   }
   *{box-sizing:border-box;}
@@ -95,6 +95,11 @@
   @media (max-width:640px){
     .grid{grid-template-columns:repeat(7,minmax(78px,1fr));overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
   }
+  .grid.grid-scroll{
+    display:flex;overflow-x:auto;scroll-snap-type:x proximity;
+    gap:8px;padding-bottom:10px;-webkit-overflow-scrolling:touch;
+  }
+  .grid.grid-scroll .day-col{min-width:80px;scroll-snap-align:start;flex-shrink:0;}
 
   .day-col{display:flex;flex-direction:column;gap:7px;min-height:110px;}
   .day-head{text-align:center;padding-bottom:9px;border-bottom:2px solid var(--border);margin-bottom:2px;}
@@ -189,7 +194,7 @@
 
   .music-widget{
     position:fixed;bottom:16px;right:16px;z-index:60;
-    max-width:300px;
+    display:flex;flex-direction:column;align-items:flex-end;gap:10px;
   }
   .music-toggle{
     background:var(--text);color:#fff;border:none;border-radius:30px;
@@ -198,8 +203,9 @@
     box-shadow:0 6px 18px rgba(0,0,0,0.2);
   }
   .music-panel{
+    width:min(280px, calc(100vw - 32px));
     background:#fff;border:1px solid var(--border);border-radius:14px;
-    padding:12px;margin-bottom:10px;box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    padding:12px;box-shadow:0 10px 30px rgba(0,0,0,0.15);
   }
   .music-panel .cap{font-size:11px;color:var(--text-dim);margin-bottom:8px;text-align:center;}
 </style>
@@ -249,6 +255,8 @@ window.storage = {
 
   let schedule = [];
   let clientName = '';
+  let clientContactMethod = 'Phone';
+  let clientContactValue = '';
   let weekStart = mondayOf(new Date());
   let toastMsg = null;
   let toastTimer = null;
@@ -290,6 +298,16 @@ window.storage = {
     toastTimer=setTimeout(()=>{toastMsg=null; render();},2600);
   }
 
+  function contactPlaceholder(){
+    switch(clientContactMethod){
+      case 'Phone': return 'e.g. 0433 137 811';
+      case 'Snapchat': return 'your Snapchat username';
+      case 'Instagram': return 'your Instagram handle';
+      case 'Email': return 'you@example.com';
+      default: return '';
+    }
+  }
+
   async function loadSchedule(){
     try{
       const s = await window.storage.get('schedule', true);
@@ -307,6 +325,7 @@ window.storage = {
     const slot = schedule.find(s=>s.id===pendingSlotId);
     if(!slot || slot.status!=='open'){ showToast('That slot just got taken'); step='pick'; pendingSlotId=null; render(); return; }
     slot.status='booked'; slot.clientName=clientName.trim(); slot.haircutType=pendingType; slot.note=pendingNote.trim(); slot.photo=pendingPhoto;
+    slot.contactMethod=clientContactMethod; slot.contactValue=clientContactValue.trim();
     await saveSchedule();
     sendBookingEmail(slot);
     step='success';
@@ -319,7 +338,9 @@ window.storage = {
       client_name: slot.clientName,
       when: fmtFull(slot.date, slot.time),
       haircut_type: slot.haircutType || '',
-      notes: slot.note || 'None'
+      notes: slot.note || 'None',
+      contact: (slot.contactMethod||'')+' — '+(slot.contactValue||''),
+      dashboard_link: 'https://guidescuts.github.io/Guides/barber.html'
     }).catch(()=>{ /* booking already saved either way; email is best-effort */ });
   }
 
@@ -394,47 +415,97 @@ window.storage = {
       clientName=e.target.value;
       nameRow.className='name-row'+(clientName.trim()? ' filled':'');
       hint.className='name-hint'+(clientName.trim()? ' ok':'');
-      hint.textContent = clientName.trim()? 'Looks good.' : 'Required — we need this to know who\'s booked';
+      hint.textContent = clientName.trim()? 'Looks good.' : 'Required';
     };
     nameRow.appendChild(nameInput);
     wrap.appendChild(nameRow);
 
     const hint=document.createElement('div');
     hint.className='name-hint'+(clientName.trim()? ' ok':'');
-    hint.textContent = clientName.trim()? 'Looks good.' : 'Required — we need this to know who\'s booked';
+    hint.textContent = clientName.trim()? 'Looks good.' : 'Required';
     wrap.appendChild(hint);
 
+    const contactRow=document.createElement('div');
+    contactRow.className='name-row'+(clientContactValue.trim()? ' filled':'');
+    contactRow.style.marginTop='10px';
+    contactRow.innerHTML=`<label><span class="req">*</span> How can we reach you?</label>`;
+    const contactInner=document.createElement('div');
+    contactInner.style.cssText='display:flex;gap:8px;';
+    const methodSelect=document.createElement('select');
+    methodSelect.style.cssText='background:transparent;border:none;color:var(--text);font-family:inherit;font-size:15px;font-weight:600;outline:none;flex-shrink:0;';
+    ['Phone','Snapchat','Instagram','Email'].forEach(m=>{
+      const o=document.createElement('option'); o.value=m; o.textContent=m;
+      if(m===clientContactMethod) o.selected=true;
+      methodSelect.appendChild(o);
+    });
+    methodSelect.onchange=(e)=>{ clientContactMethod=e.target.value; contactValueInput.placeholder=contactPlaceholder(); };
+    const contactValueInput=document.createElement('input');
+    contactValueInput.value=clientContactValue;
+    contactValueInput.placeholder=contactPlaceholder();
+    contactValueInput.style.cssText='flex:1;';
+    contactValueInput.oninput=(e)=>{
+      clientContactValue=e.target.value;
+      contactRow.className='name-row'+(clientContactValue.trim()? ' filled':'');
+      contactHint.className='name-hint'+(clientContactValue.trim()? ' ok':'');
+      contactHint.textContent = clientContactValue.trim()? 'Looks good.' : 'Required';
+    };
+    contactInner.appendChild(methodSelect);
+    contactInner.appendChild(contactValueInput);
+    contactRow.appendChild(contactInner);
+    wrap.appendChild(contactRow);
+
+    const contactHint=document.createElement('div');
+    contactHint.className='name-hint'+(clientContactValue.trim()? ' ok':'');
+    contactHint.textContent = clientContactValue.trim()? 'Looks good.' : 'Required';
+    wrap.appendChild(contactHint);
+
+    const isMobile = window.matchMedia('(max-width:640px)').matches;
     const currentWeekStart=mondayOf(new Date());
     const lastWeekStart=addDays(currentWeekStart,14);
 
-    const nav=document.createElement('div'); nav.className='weeknav';
-    nav.innerHTML=`<div class="label">${fmtRange(weekStart)}</div>`;
-    const arrows=document.createElement('div'); arrows.className='arrows';
-    const prev=document.createElement('button'); prev.textContent='‹';
-    const atStart=iso(weekStart)===iso(currentWeekStart);
-    prev.disabled=atStart; if(atStart) prev.style.opacity='0.35';
-    prev.onclick=()=>{ if(!atStart){ weekStart=addDays(weekStart,-7); render(); } };
-    const next=document.createElement('button'); next.textContent='›';
-    const atEnd=iso(weekStart)===iso(lastWeekStart);
-    next.disabled=atEnd; if(atEnd) next.style.opacity='0.35';
-    next.onclick=()=>{ if(!atEnd){ weekStart=addDays(weekStart,7); render(); } };
-    arrows.appendChild(prev); arrows.appendChild(next);
-    nav.appendChild(arrows);
-    wrap.appendChild(nav);
+    if(!isMobile){
+      const nav=document.createElement('div'); nav.className='weeknav';
+      nav.innerHTML=`<div class="label">${fmtRange(weekStart)}</div>`;
+      const arrows=document.createElement('div'); arrows.className='arrows';
+      const prev=document.createElement('button'); prev.textContent='‹';
+      const atStart=iso(weekStart)===iso(currentWeekStart);
+      prev.disabled=atStart; if(atStart) prev.style.opacity='0.35';
+      prev.onclick=()=>{ if(!atStart){ weekStart=addDays(weekStart,-7); render(); } };
+      const next=document.createElement('button'); next.textContent='›';
+      const atEnd=iso(weekStart)===iso(lastWeekStart);
+      next.disabled=atEnd; if(atEnd) next.style.opacity='0.35';
+      next.onclick=()=>{ if(!atEnd){ weekStart=addDays(weekStart,7); render(); } };
+      arrows.appendChild(prev); arrows.appendChild(next);
+      nav.appendChild(arrows);
+      wrap.appendChild(nav);
+    } else {
+      const nav=document.createElement('div'); nav.className='weeknav';
+      nav.innerHTML=`<div class="label">${fmtRange(currentWeekStart).split(' – ')[0]} – ${fmtRange(lastWeekStart).split(' – ')[1]}</div>`;
+      wrap.appendChild(nav);
+    }
 
     const windowNote=document.createElement('div'); windowNote.className='window-note';
-    windowNote.textContent='Booking is open up to three weeks out';
+    windowNote.textContent = isMobile
+      ? 'Swipe sideways to see all three weeks'
+      : 'Booking is open up to three weeks out';
     wrap.appendChild(windowNote);
 
-    const grid=document.createElement('div'); grid.className='grid';
+    const updateNote=document.createElement('div'); updateNote.className='window-note';
+    updateNote.style.marginTop='-14px';
+    updateNote.textContent='Heads up — this schedule rolls forward each week, so new openings appear automatically once the current week ends.';
+    wrap.appendChild(updateNote);
+
+    const grid=document.createElement('div'); grid.className='grid'+(isMobile? ' grid-scroll':'');
     const dayNames=['MON','TUE','WED','THU','FRI','SAT','SUN'];
-    for(let i=0;i<7;i++){
-      const date=addDays(weekStart,i);
+    const totalDays = isMobile? 21 : 7;
+    const rangeStart = isMobile? currentWeekStart : weekStart;
+    for(let i=0;i<totalDays;i++){
+      const date=addDays(rangeStart,i);
       const dateIso=iso(date);
       const col=document.createElement('div');
       col.className='day-col'+(dateIso===todayIso()?' today':'');
       const headDiv=document.createElement('div'); headDiv.className='day-head';
-      headDiv.innerHTML=`<div class="d">${dayNames[i]}</div><div class="n">${date.getDate()}</div>`;
+      headDiv.innerHTML=`<div class="d">${dayNames[date.getDay()===0?6:date.getDay()-1]}</div><div class="n">${date.getDate()}</div>`;
       col.appendChild(headDiv);
 
       const daySlots=schedule.filter(s=>s.date===dateIso).sort((a,b)=>a.time.localeCompare(b.time));
@@ -449,6 +520,7 @@ window.storage = {
             chip.innerHTML=`<div class="time">${fmtTime(slot.time)}</div><div class="meta">open</div>`;
             chip.onclick=()=>{
               if(!clientName.trim()){ showToast('Add your name up top first'); return; }
+              if(!clientContactValue.trim()){ showToast('Add how we can reach you first'); return; }
               pendingSlotId=slot.id; step='type'; render();
             };
           } else {
@@ -577,6 +649,7 @@ window.storage = {
     const summary=document.createElement('div'); summary.className='summary';
     const rows=[
       ['Name', clientName.trim()],
+      ['Contact', clientContactMethod+' — '+clientContactValue.trim()],
       ['When', fmtFull(slot.date, slot.time)],
       ['Haircut', pendingType],
       ['Notes', pendingNote || '—']
@@ -613,7 +686,7 @@ window.storage = {
     s.innerHTML=`
       <div class="mark">✓</div>
       <h2>You're booked</h2>
-      <p>See you then — the barber can see your booking on their end.</p>
+      <p>See you then — the barber can see your booking on their end.<br>Need to get in touch? Call or text <strong>0433 137 811</strong>.</p>
     `;
     wrap.appendChild(s);
 
@@ -663,7 +736,7 @@ window.storage = {
   // ---- music widget ----
   function renderMusicWidget(){
     const widget = document.getElementById('musicWidget');
-    let open = true;
+    let open = window.matchMedia('(min-width:640px)').matches;
     function paint(){
       widget.innerHTML='';
       if(open){
