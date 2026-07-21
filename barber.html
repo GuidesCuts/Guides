@@ -160,8 +160,17 @@ window.storage = {
 
 (function(){
   const app = document.getElementById('app');
-  const TIME_SLOTS = ['09:00','10:00','14:00','15:00','19:00','20:00'];
   const SESSION_MINUTES = 60;
+
+  function buildTimeOptions(){
+    const opts=[];
+    for(let h=6; h<24; h++){
+      for(let m=0; m<60; m+=15){
+        opts.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
+      }
+    }
+    return opts;
+  }
 
   let schedule = [];
   let barberPin = null;
@@ -175,7 +184,10 @@ window.storage = {
     const diff=(day===0?-6:1)-day; dt.setDate(dt.getDate()+diff); dt.setHours(0,0,0,0);
     return dt;
   }
-  function iso(d){ return d.toISOString().slice(0,10); }
+  function iso(d){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
   function addDays(d,n){ const c=new Date(d); c.setDate(c.getDate()+n); return c; }
   function todayIso(){ return iso(new Date()); }
   function fmtTime(t){
@@ -318,7 +330,7 @@ window.storage = {
     const timeWrap=document.createElement('div'); timeWrap.className='field-mini';
     timeWrap.innerHTML='<label>Time</label>';
     const timeSelect=document.createElement('select');
-    TIME_SLOTS.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=fmtTime(t); timeSelect.appendChild(o); });
+    buildTimeOptions().forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=fmtTime(t); if(t==='14:00') o.selected=true; timeSelect.appendChild(o); });
     timeWrap.appendChild(timeSelect);
 
     row.appendChild(dateWrap); row.appendChild(timeWrap);
