@@ -689,9 +689,17 @@ window.storage = {
     s.innerHTML=`
       <div class="mark">✓</div>
       <h2>You're booked</h2>
-      <p>See you then — the barber can see your booking on their end.<br>Need to get in touch? Call or text <strong>0433 137 811</strong>.</p>
+      <p>See you then — the barber can see your booking on their end.</p>
     `;
     wrap.appendChild(s);
+
+    const contactCard=document.createElement('div');
+    contactCard.style.cssText='background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;';
+    contactCard.innerHTML=`
+      <div style="font-size:13px;color:var(--text-dim);font-weight:600;margin-bottom:6px;">Contact the barber</div>
+      <a href="tel:0433137811" style="font-family:'Fraunces',serif;font-size:19px;font-weight:700;color:var(--accent-dark);text-decoration:none;">0433 137 811</a>
+    `;
+    wrap.appendChild(contactCard);
 
     const actions=document.createElement('div');
     actions.style.cssText='display:flex;flex-direction:column;gap:10px;';
