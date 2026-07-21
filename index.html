@@ -2,166 +2,209 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guides Cuts</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#101114;
-    --surface:#17181C;
-    --surface-hover:#1D1F24;
-    --border:#2A2C31;
-    --text:#EDEDEF;
-    --text-dim:#8B8D94;
-    --text-faint:#54565D;
-    --accent:#3ECF8E;
-    --accent-dim:#1F5E43;
-    --danger:#D9695F;
+    --bg:#FFFFFF;
+    --surface:#F7F5F0;
+    --surface-hover:#EFEBE0;
+    --border:#E4E0D3;
+    --text:#1D1F23;
+    --text-dim:#5F636B;
+    --text-faint:#9C9FA6;
+    --accent:#1FA971;
+    --accent-soft:#E3F6EC;
+    --accent-dark:#15754C;
+    --warn:#E0742E;
+    --warn-soft:#FDECDF;
+    --danger:#D64545;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;background:var(--bg);color:var(--text);
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
+    font-size:16px;
   }
-  #app{max-width:640px;margin:0 auto;padding:40px 20px 80px;}
+  #app{max-width:640px;margin:0 auto;padding:28px 18px 100px;}
+  @media (min-width:640px){ #app{padding:44px 24px 100px;} }
 
-  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
   .back{
     background:none;border:none;color:var(--text-dim);cursor:pointer;
-    font-size:13px;font-family:inherit;padding:4px 0;display:flex;align-items:center;gap:5px;
+    font-size:14px;font-family:inherit;padding:6px 0;display:flex;align-items:center;gap:5px;
   }
   .back:hover{color:var(--text);}
-  .wordmark{font-size:19px;font-weight:600;letter-spacing:-0.2px;}
-  .subtitle{color:var(--text-dim);font-size:13px;margin-top:4px;margin-bottom:28px;}
 
-  .step-dots{display:flex;gap:6px;margin-bottom:28px;}
-  .step-dots span{width:22px;height:3px;border-radius:2px;background:var(--border);}
-  .step-dots span.done{background:var(--accent-dim);}
+  .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .brand-icon{width:34px;height:34px;flex-shrink:0;}
+  .wordmark{font-family:'Fraunces',serif;font-weight:700;font-size:26px;letter-spacing:-0.3px;}
+  .subtitle{color:var(--text-dim);font-size:15px;margin-top:6px;margin-bottom:22px;}
+
+  .step-dots{display:flex;gap:6px;margin-bottom:22px;}
+  .step-dots span{width:24px;height:4px;border-radius:2px;background:var(--border);}
+  .step-dots span.done{background:var(--accent-dark);opacity:0.5;}
   .step-dots span.active{background:var(--accent);}
 
-  .name-row{
-    display:flex;align-items:center;gap:10px;margin-bottom:26px;
-    background:var(--surface);border:1px solid var(--border);border-radius:8px;
-    padding:10px 12px;
+  .price-row{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+  .price-pill{
+    flex:1;min-width:150px;
+    background:var(--accent-soft);border:1px solid #CDEEDD;border-radius:12px;
+    padding:12px 14px;
   }
-  .name-row label{font-size:12px;color:var(--text-dim);white-space:nowrap;}
+  .price-pill .amount{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--accent-dark);}
+  .price-pill .who{font-size:13px;color:var(--text-dim);margin-top:2px;}
+
+  .name-row{
+    border-radius:12px;
+    padding:14px 16px;margin-bottom:8px;
+    border:1.5px solid var(--warn);
+    background:var(--warn-soft);
+    transition:border-color .15s, background .15s;
+  }
+  .name-row.filled{border-color:var(--border);background:var(--surface);}
+  .name-row label{
+    font-size:13px;color:var(--text);font-weight:600;display:flex;align-items:center;gap:5px;margin-bottom:6px;
+  }
+  .name-row label .req{color:var(--warn);font-weight:700;}
   .name-row input{
-    flex:1;background:none;border:none;color:var(--text);font-family:inherit;
-    font-size:13px;outline:none;
+    width:100%;background:transparent;border:none;color:var(--text);font-family:inherit;
+    font-size:16px;outline:none;padding:2px 0;
   }
   .name-row input::placeholder{color:var(--text-faint);}
+  .name-hint{font-size:12px;color:var(--warn);margin:0 0 24px 2px;}
+  .name-hint.ok{color:var(--text-faint);}
 
   .weeknav{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-  .weeknav .label{font-size:14px;font-weight:500;}
+  .weeknav .label{font-size:16px;font-weight:600;}
   .weeknav .arrows{display:flex;gap:4px;}
   .weeknav button{
     background:var(--surface);border:1px solid var(--border);color:var(--text-dim);
-    width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;
+    width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px;
     display:flex;align-items:center;justify-content:center;
   }
   .weeknav button:hover:not(:disabled){color:var(--text);border-color:var(--text-faint);}
-  .window-note{font-size:12px;color:var(--text-faint);margin-bottom:18px;}
+  .window-note{font-size:13px;color:var(--text-faint);margin-bottom:18px;}
 
-  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
   @media (max-width:640px){
-    .grid{grid-template-columns:repeat(7,minmax(84px,1fr));overflow-x:auto;padding-bottom:6px;}
+    .grid{grid-template-columns:repeat(7,minmax(78px,1fr));overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
   }
 
-  .day-col{display:flex;flex-direction:column;gap:8px;min-height:120px;}
-  .day-head{text-align:center;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px;}
-  .day-head .d{font-size:11px;color:var(--text-dim);letter-spacing:0.5px;text-transform:uppercase;}
-  .day-head .n{font-size:16px;font-weight:500;margin-top:2px;}
-  .day-col.today .day-head .n{color:var(--accent);}
+  .day-col{display:flex;flex-direction:column;gap:7px;min-height:110px;}
+  .day-head{text-align:center;padding-bottom:9px;border-bottom:2px solid var(--border);margin-bottom:2px;}
+  .day-head .d{font-size:11px;color:var(--text-dim);letter-spacing:0.5px;text-transform:uppercase;font-weight:600;}
+  .day-head .n{font-size:17px;font-weight:700;margin-top:2px;}
+  .day-col.today .day-head .n{color:var(--accent-dark);}
   .day-col.today .day-head{border-bottom-color:var(--accent);}
 
-  .chip{border-radius:7px;padding:8px 9px;font-size:12px;border:1px solid transparent;}
-  .chip .time{font-weight:500;font-size:12px;}
-  .chip .meta{font-size:11px;margin-top:2px;}
-  .chip.open{border-color:var(--accent-dim);color:var(--accent);cursor:pointer;background:transparent;}
-  .chip.open:hover{background:rgba(62,207,142,0.08);}
-  .chip.open .time{color:var(--accent);}
-  .chip.open .meta{color:#2f8f68;}
-  .chip.booked{background:var(--surface);border-color:var(--border);}
-  .chip.booked .time{color:var(--text);}
-  .chip.booked .meta{color:var(--text-dim);}
-  .none{color:var(--text-faint);font-size:12px;text-align:center;padding-top:16px;}
+  .chip{border-radius:9px;padding:9px 8px;font-size:12.5px;border:1.5px solid transparent;}
+  .chip .time{font-weight:700;font-size:13px;}
+  .chip .meta{font-size:11px;margin-top:2px;font-weight:500;}
+  .chip.open{border-color:var(--accent);color:var(--accent-dark);cursor:pointer;background:var(--accent-soft);}
+  .chip.open:hover{background:#D4F0E2;}
+  .chip.open .time{color:var(--accent-dark);}
+  .chip.open .meta{color:var(--accent-dark);opacity:0.8;}
+  .chip.booked{background:var(--surface);border-color:var(--border);color:var(--text-dim);}
+  .chip.booked .time{color:var(--text-dim);}
+  .none{color:var(--text-faint);font-size:12px;text-align:center;padding-top:14px;}
 
-  .legend{display:flex;gap:20px;margin-top:34px;padding-top:18px;border-top:1px solid var(--border);}
-  .legend .item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim);}
-  .dot{width:8px;height:8px;border-radius:50%;}
-  .dot.open{background:none;border:1.5px solid var(--accent);}
+  .legend{display:flex;gap:20px;margin-top:30px;padding-top:18px;border-top:1px solid var(--border);}
+  .legend .item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-dim);}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .dot.open{background:var(--accent);}
   .dot.booked{background:var(--text-faint);}
 
   .context-card{
-    background:var(--surface);border:1px solid var(--border);border-radius:8px;
-    padding:12px 14px;margin-bottom:26px;font-size:13px;color:var(--text-dim);
+    background:var(--accent-soft);border:1px solid #CDEEDD;border-radius:12px;
+    padding:13px 15px;margin-bottom:24px;font-size:14px;color:var(--accent-dark);
   }
-  .context-card strong{color:var(--text);font-weight:500;}
+  .context-card strong{font-weight:700;}
 
   .type-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
   .type-option{
     display:flex;align-items:center;gap:12px;
-    background:var(--surface);border:1px solid var(--border);border-radius:8px;
-    padding:13px 14px;cursor:pointer;font-size:14px;
+    background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+    padding:14px 15px;cursor:pointer;font-size:15px;font-weight:500;
   }
   .type-option:hover{border-color:var(--text-faint);}
-  .type-option.selected{border-color:var(--accent);background:rgba(62,207,142,0.06);}
+  .type-option.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark);}
   .type-option .ring{
-    width:16px;height:16px;border-radius:50%;border:1.5px solid var(--text-faint);
+    width:18px;height:18px;border-radius:50%;border:2px solid var(--text-faint);
     flex-shrink:0;display:flex;align-items:center;justify-content:center;
   }
   .type-option.selected .ring{border-color:var(--accent);}
-  .type-option.selected .ring::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .type-option.selected .ring::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--accent);}
 
   .field{margin-bottom:20px;}
-  .field label{font-size:12px;color:var(--text-dim);display:block;margin-bottom:7px;}
+  .field label{font-size:13px;color:var(--text-dim);display:block;margin-bottom:7px;font-weight:500;}
   .field input{
-    width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);
-    padding:10px 12px;border-radius:8px;font-family:inherit;font-size:13px;
+    width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);
+    padding:12px 13px;border-radius:10px;font-family:inherit;font-size:15px;
   }
   .field input::placeholder{color:var(--text-faint);}
-  .field input:focus{outline:1px solid var(--accent);}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
 
   .summary{
-    background:var(--surface);border:1px solid var(--border);border-radius:10px;
-    padding:16px;margin-bottom:24px;
+    background:var(--surface);border:1.5px solid var(--border);border-radius:12px;
+    padding:6px 16px;margin-bottom:24px;
   }
-  .summary-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;}
+  .summary-row{display:flex;justify-content:space-between;padding:12px 0;font-size:14px;}
   .summary-row + .summary-row{border-top:1px solid var(--border);}
   .summary-row .k{color:var(--text-dim);}
-  .summary-row .v{color:var(--text);font-weight:500;text-align:right;}
+  .summary-row .v{color:var(--text);font-weight:600;text-align:right;}
 
   .btn{
-    font-family:inherit;font-size:13px;font-weight:500;border-radius:7px;
-    padding:11px 16px;cursor:pointer;border:1px solid transparent;width:100%;
+    font-family:inherit;font-size:15px;font-weight:600;border-radius:10px;
+    padding:13px 16px;cursor:pointer;border:1.5px solid transparent;width:100%;
   }
-  .btn-primary{background:var(--accent);color:#08130E;}
-  .btn-primary:hover:not(:disabled){filter:brightness(1.05);}
-  .btn-primary:disabled{background:var(--text-faint);color:var(--bg);cursor:not-allowed;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover:not(:disabled){background:var(--accent-dark);}
+  .btn-primary:disabled{background:var(--text-faint);cursor:not-allowed;}
   .btn-ghost{background:none;border-color:var(--border);color:var(--text-dim);}
   .btn-ghost:hover{color:var(--text);border-color:var(--text-faint);}
 
   .success{text-align:center;padding:30px 0 10px;}
   .success .mark{
-    width:52px;height:52px;border-radius:50%;border:2px solid var(--accent);
-    color:var(--accent);display:flex;align-items:center;justify-content:center;
-    font-size:24px;margin:0 auto 18px;
+    width:56px;height:56px;border-radius:50%;background:var(--accent-soft);
+    color:var(--accent-dark);display:flex;align-items:center;justify-content:center;
+    font-size:26px;margin:0 auto 18px;
   }
-  .success h2{font-size:18px;font-weight:500;margin:0 0 8px;}
-  .success p{color:var(--text-dim);font-size:13px;margin:0 0 28px;}
+  .success h2{font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin:0 0 8px;}
+  .success p{color:var(--text-dim);font-size:14px;margin:0 0 28px;}
 
   .toast{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:var(--text);color:var(--bg);padding:10px 18px;border-radius:6px;
-    font-size:13px;font-weight:500;z-index:50;
+    position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+    background:var(--text);color:#fff;padding:11px 18px;border-radius:8px;
+    font-size:14px;font-weight:600;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,0.15);
   }
-  .loading{text-align:center;padding:60px 0;color:var(--text-faint);font-size:13px;}
+  .loading{text-align:center;padding:60px 0;color:var(--text-faint);font-size:14px;}
+
+  .music-widget{
+    position:fixed;bottom:16px;right:16px;z-index:60;
+    max-width:280px;
+  }
+  .music-toggle{
+    background:var(--text);color:#fff;border:none;border-radius:30px;
+    padding:11px 16px;font-family:inherit;font-size:13px;font-weight:600;
+    cursor:pointer;display:flex;align-items:center;gap:8px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+  }
+  .music-panel{
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+    padding:12px;margin-bottom:10px;box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  }
+  .music-panel .cap{font-size:11px;color:var(--text-dim);margin-bottom:8px;text-align:center;}
 </style>
 </head>
 <body>
 <div id="app"><div class="loading">Loading the schedule…</div></div>
+
+<div class="music-widget" id="musicWidget"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -234,7 +277,6 @@ window.storage = {
     const d=new Date(dateStr+'T00:00:00');
     return d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})+' · '+fmtTime(time);
   }
-  function id(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
 
   function showToast(msg){
     toastMsg=msg; render();
@@ -248,32 +290,11 @@ window.storage = {
       schedule = s? JSON.parse(s.value) : [];
     }catch(e){ schedule = []; }
     render();
+    renderMusicWidget();
   }
   async function saveSchedule(){
     try{ await window.storage.set('schedule', JSON.stringify(schedule), true); }
     catch(e){ showToast("Couldn't save — try again"); }
-  }
-
-  function seedPlaceholderWeeks(){
-    const mon = mondayOf(new Date());
-    const pattern = [
-      {offset:0, times:['14:00','16:30']},
-      {offset:1, times:['11:00']},
-      {offset:3, times:['13:00','14:00','16:30']},
-      {offset:4, times:['17:00']},
-      {offset:5, times:['12:00','13:30']},
-      {offset:7, times:['14:00','16:00']},
-      {offset:8, times:['11:00','15:30']},
-      {offset:10, times:['13:00','14:00']},
-      {offset:11, times:['17:00']},
-      {offset:12, times:['12:00','13:30','16:00']}
-    ];
-    const slots=[];
-    pattern.forEach(p=>{
-      const date = iso(addDays(mon,p.offset));
-      p.times.forEach(time=> slots.push({id:id(), date, time, duration:30, status:'open', clientName:'', haircutType:'', note:''}));
-    });
-    return slots;
   }
 
   async function confirmBooking(){
@@ -309,30 +330,65 @@ window.storage = {
     return wrap;
   }
 
+  function brandRow(){
+    const row=document.createElement('div'); row.className='brand-row';
+    row.innerHTML=`
+      <svg class="brand-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="200" height="200" rx="44" fill="#1FA971"/>
+        <g stroke="#ffffff" stroke-width="9" stroke-linecap="round">
+          <line x1="100" y1="100" x2="100" y2="18"/>
+          <line x1="100" y1="100" x2="171" y2="59"/>
+          <line x1="100" y1="100" x2="171" y2="141"/>
+          <line x1="100" y1="100" x2="100" y2="182"/>
+          <line x1="100" y1="100" x2="29" y2="141"/>
+          <line x1="100" y1="100" x2="29" y2="59"/>
+        </g>
+        <circle cx="100" cy="100" r="9" fill="#ffffff"/>
+      </svg>
+      <div class="wordmark">Guides Cuts</div>
+    `;
+    return row;
+  }
+
   // ---- Step 1: pick a time ----
   function renderPick(){
     const wrap=document.createElement('div');
 
-    const top=document.createElement('div'); top.className='topbar';
-    top.innerHTML=`<div class="wordmark">Guides Cuts</div>`;
-    wrap.appendChild(top);
-
+    wrap.appendChild(brandRow());
     const sub=document.createElement('div'); sub.className='subtitle';
-    sub.textContent='Step 1 · Pick a time for your cut';
+    sub.textContent='Pick a time for your cut';
     wrap.appendChild(sub);
     wrap.appendChild(stepDots(0));
 
-    const nameRow=document.createElement('div'); nameRow.className='name-row';
-    nameRow.innerHTML=`<label>Your name</label>`;
+    const priceRow=document.createElement('div'); priceRow.className='price-row';
+    priceRow.innerHTML=`
+      <div class="price-pill"><div class="amount">$10</div><div class="who">Baxter residents</div></div>
+      <div class="price-pill"><div class="amount">$15</div><div class="who">Outside guests</div></div>
+    `;
+    wrap.appendChild(priceRow);
+
+    const nameRow=document.createElement('div');
+    nameRow.className='name-row'+(clientName.trim()? ' filled':'');
+    nameRow.innerHTML=`<label><span class="req">*</span> Your name</label>`;
     const nameInput=document.createElement('input');
-    nameInput.placeholder='e.g. Alex from Room 214';
+    nameInput.placeholder='E.g. James the Therapist';
     nameInput.value=clientName;
-    nameInput.oninput=(e)=>{ clientName=e.target.value; };
+    nameInput.oninput=(e)=>{
+      clientName=e.target.value;
+      nameRow.className='name-row'+(clientName.trim()? ' filled':'');
+      hint.className='name-hint'+(clientName.trim()? ' ok':'');
+      hint.textContent = clientName.trim()? 'Looks good.' : 'Required — we need this to know who\'s booked';
+    };
     nameRow.appendChild(nameInput);
     wrap.appendChild(nameRow);
 
+    const hint=document.createElement('div');
+    hint.className='name-hint'+(clientName.trim()? ' ok':'');
+    hint.textContent = clientName.trim()? 'Looks good.' : 'Required — we need this to know who\'s booked';
+    wrap.appendChild(hint);
+
     const currentWeekStart=mondayOf(new Date());
-    const lastWeekStart=addDays(currentWeekStart,7);
+    const lastWeekStart=addDays(currentWeekStart,14);
 
     const nav=document.createElement('div'); nav.className='weeknav';
     nav.innerHTML=`<div class="label">${fmtRange(weekStart)}</div>`;
@@ -350,7 +406,7 @@ window.storage = {
     wrap.appendChild(nav);
 
     const windowNote=document.createElement('div'); windowNote.className='window-note';
-    windowNote.textContent='Booking is open up to two weeks out';
+    windowNote.textContent='Booking is open up to three weeks out';
     wrap.appendChild(windowNote);
 
     const grid=document.createElement('div'); grid.className='grid';
@@ -408,11 +464,9 @@ window.storage = {
     top.appendChild(back);
     wrap.appendChild(top);
 
-    const wm=document.createElement('div'); wm.className='wordmark'; wm.style.marginTop='6px'; wm.textContent='Guides Cuts';
-    wrap.appendChild(wm);
-
+    wrap.appendChild(brandRow());
     const sub=document.createElement('div'); sub.className='subtitle';
-    sub.textContent='Step 2 · What kind of cut?';
+    sub.textContent='What kind of cut?';
     wrap.appendChild(sub);
     wrap.appendChild(stepDots(1));
 
@@ -460,11 +514,9 @@ window.storage = {
     top.appendChild(back);
     wrap.appendChild(top);
 
-    const wm=document.createElement('div'); wm.className='wordmark'; wm.style.marginTop='6px'; wm.textContent='Guides Cuts';
-    wrap.appendChild(wm);
-
+    wrap.appendChild(brandRow());
     const sub=document.createElement('div'); sub.className='subtitle';
-    sub.textContent='Step 3 · Confirm your booking';
+    sub.textContent='Confirm your booking';
     wrap.appendChild(sub);
     wrap.appendChild(stepDots(2));
 
@@ -494,8 +546,7 @@ window.storage = {
   // ---- Step 4: success ----
   function renderSuccess(){
     const wrap=document.createElement('div');
-    const wm=document.createElement('div'); wm.className='wordmark'; wm.textContent='Guides Cuts';
-    wrap.appendChild(wm);
+    wrap.appendChild(brandRow());
 
     const s=document.createElement('div'); s.className='success';
     s.innerHTML=`
@@ -519,6 +570,33 @@ window.storage = {
 
   function escapeHtml(str){
     const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML;
+  }
+
+  // ---- music widget ----
+  function renderMusicWidget(){
+    const widget = document.getElementById('musicWidget');
+    let open = false;
+    function paint(){
+      widget.innerHTML='';
+      if(open){
+        const panel=document.createElement('div'); panel.className='music-panel';
+        panel.innerHTML=`<div class="cap">🎵 Myself — NAV</div>`;
+        const iframe=document.createElement('iframe');
+        iframe.src='https://open.spotify.com/embed/track/0OPfZM09RUjE46nIeJGCfX';
+        iframe.width='100%'; iframe.height='80'; iframe.frameBorder='0';
+        iframe.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+        iframe.loading='lazy';
+        iframe.style.borderRadius='10px';
+        panel.appendChild(iframe);
+        widget.appendChild(panel);
+      }
+      const toggle=document.createElement('button');
+      toggle.className='music-toggle';
+      toggle.innerHTML = open? '✕ Close' : '🎵 Play music';
+      toggle.onclick=()=>{ open=!open; paint(); };
+      widget.appendChild(toggle);
+    }
+    paint();
   }
 
   loadSchedule();

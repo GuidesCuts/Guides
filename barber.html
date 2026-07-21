@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guides Cuts — barber</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -400,12 +401,31 @@ window.storage = {
       del.onclick=()=>removeSlot(slot.id);
       row.appendChild(del);
     } else {
+      const cal=document.createElement('a');
+      cal.className='btn btn-ghost btn-small';
+      cal.textContent='Add to Calendar';
+      cal.target='_blank';
+      cal.rel='noopener';
+      cal.href=googleCalendarUrl(slot);
+      row.appendChild(cal);
+
       const cancel=document.createElement('button');
       cancel.className='btn btn-danger btn-small'; cancel.textContent='Cancel';
       cancel.onclick=()=>{ if(confirm('Cancel '+slot.clientName+"'s booking?")) cancelBooking(slot.id); };
       row.appendChild(cancel);
     }
     return row;
+  }
+
+  function googleCalendarUrl(slot){
+    const [h,m] = slot.time.split(':').map(Number);
+    const start = new Date(slot.date+'T00:00:00');
+    start.setHours(h,m,0,0);
+    const end = new Date(start.getTime() + slot.duration*60000);
+    const fmt = (d)=> d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    const text = encodeURIComponent('Haircut — '+slot.clientName);
+    const details = encodeURIComponent((slot.haircutType||'')+(slot.note? ' — "'+slot.note+'"':''));
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
   }
 
   function escapeHtml(str){
