@@ -7,6 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root{
     --bg:#FFFFFF;
@@ -186,7 +187,7 @@
 
   .music-widget{
     position:fixed;bottom:16px;right:16px;z-index:60;
-    max-width:280px;
+    max-width:300px;
   }
   .music-toggle{
     background:var(--text);color:#fff;border:none;border-radius:30px;
@@ -222,6 +223,8 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
+if(window.emailjs){ window.emailjs.init({ publicKey: "UKIijA7HT4OuNYwhQ" }); }
+
 window.storage = {
   async get(key, shared){
     const snap = await getDoc(doc(db, 'kv', key));
@@ -240,7 +243,7 @@ window.storage = {
 
 (function(){
   const app = document.getElementById('app');
-  const HAIRCUT_TYPES = ['Simple trim','Skin fade','Design / pattern','Beard trim','Trim + beard','Other'];
+  const HAIRCUT_TYPES = ['Scissor Cut','Fade','Scissor Cut & Fade','Buzz Cut','Design / Pattern','Other'];
 
   let schedule = [];
   let clientName = '';
@@ -252,6 +255,7 @@ window.storage = {
   let pendingSlotId = null;
   let pendingType = '';
   let pendingNote = '';
+  let pendingPhoto = '';
 
   function mondayOf(d){
     const dt = new Date(d);
@@ -300,10 +304,21 @@ window.storage = {
   async function confirmBooking(){
     const slot = schedule.find(s=>s.id===pendingSlotId);
     if(!slot || slot.status!=='open'){ showToast('That slot just got taken'); step='pick'; pendingSlotId=null; render(); return; }
-    slot.status='booked'; slot.clientName=clientName.trim(); slot.haircutType=pendingType; slot.note=pendingNote.trim();
+    slot.status='booked'; slot.clientName=clientName.trim(); slot.haircutType=pendingType; slot.note=pendingNote.trim(); slot.photo=pendingPhoto;
     await saveSchedule();
+    sendBookingEmail(slot);
     step='success';
     render();
+  }
+
+  function sendBookingEmail(slot){
+    if(!window.emailjs) return;
+    window.emailjs.send('service_fyk9tkb', 'template_c6m42w2', {
+      client_name: slot.clientName,
+      when: fmtFull(slot.date, slot.time),
+      haircut_type: slot.haircutType || '',
+      notes: slot.note || 'None'
+    }).catch(()=>{ /* booking already saved either way; email is best-effort */ });
   }
 
   function render(){
@@ -487,11 +502,48 @@ window.storage = {
     const noteField=document.createElement('div'); noteField.className='field';
     noteField.innerHTML=`<label>Notes (optional)</label>`;
     const noteInput=document.createElement('input');
-    noteInput.placeholder='e.g. reference photo sent on GroupMe';
+    noteInput.placeholder='e.g. keep the sides tight';
     noteInput.value=pendingNote;
     noteInput.oninput=(e)=>{ pendingNote=e.target.value; };
     noteField.appendChild(noteInput);
     wrap.appendChild(noteField);
+
+    const photoField=document.createElement('div'); photoField.className='field';
+    photoField.innerHTML=`<label>Reference photo (optional)</label>`;
+    const photoInput=document.createElement('input');
+    photoInput.type='file';
+    photoInput.accept='image/*';
+    photoInput.style.cssText='padding:9px;font-size:13px;';
+    const preview=document.createElement('div');
+    preview.style.cssText='margin-top:10px;';
+    if(pendingPhoto){
+      preview.innerHTML=`<img src="${pendingPhoto}" style="max-width:140px;border-radius:10px;border:1.5px solid var(--border);display:block;">
+        <button type="button" style="margin-top:6px;background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;text-decoration:underline;">Remove photo</button>`;
+      preview.querySelector('button').onclick=()=>{ pendingPhoto=''; render(); };
+    }
+    photoInput.onchange=(e)=>{
+      const file=e.target.files[0];
+      if(!file) return;
+      const img=new Image();
+      const reader=new FileReader();
+      reader.onload=(ev)=>{
+        img.onload=()=>{
+          const maxDim=500;
+          const scale=Math.min(1, maxDim/Math.max(img.width,img.height));
+          const canvas=document.createElement('canvas');
+          canvas.width=img.width*scale; canvas.height=img.height*scale;
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          pendingPhoto=canvas.toDataURL('image/jpeg',0.6);
+          render();
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    photoField.appendChild(photoInput);
+    photoField.appendChild(preview);
+    wrap.appendChild(photoField);
 
     const continueBtn=document.createElement('button');
     continueBtn.className='btn btn-primary';
@@ -534,6 +586,13 @@ window.storage = {
     });
     wrap.appendChild(summary);
 
+    if(pendingPhoto){
+      const photoPreview=document.createElement('img');
+      photoPreview.src=pendingPhoto;
+      photoPreview.style.cssText='max-width:140px;border-radius:10px;border:1.5px solid var(--border);display:block;margin:-12px 0 24px;';
+      wrap.appendChild(photoPreview);
+    }
+
     const confirmBtn=document.createElement('button');
     confirmBtn.className='btn btn-primary';
     confirmBtn.textContent='Confirm booking';
@@ -556,11 +615,23 @@ window.storage = {
     `;
     wrap.appendChild(s);
 
+    const slot = schedule.find(s=>s.id===pendingSlotId);
+    if(slot){
+      const cal=document.createElement('a');
+      cal.className='btn btn-ghost';
+      cal.style.marginBottom='10px';
+      cal.textContent='Add to Google Calendar';
+      cal.target='_blank';
+      cal.rel='noopener';
+      cal.href=googleCalendarUrl(slot);
+      wrap.appendChild(cal);
+    }
+
     const again=document.createElement('button');
     again.className='btn btn-ghost';
     again.textContent='Book another slot';
     again.onclick=()=>{
-      pendingSlotId=null; pendingType=''; pendingNote='';
+      pendingSlotId=null; pendingType=''; pendingNote=''; pendingPhoto='';
       step='pick'; render();
     };
     wrap.appendChild(again);
@@ -572,18 +643,29 @@ window.storage = {
     const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML;
   }
 
+  function googleCalendarUrl(slot){
+    const [h,m] = slot.time.split(':').map(Number);
+    const start = new Date(slot.date+'T00:00:00');
+    start.setHours(h,m,0,0);
+    const end = new Date(start.getTime() + slot.duration*60000);
+    const fmt = (d)=> d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    const text = encodeURIComponent('Haircut — Guides Cuts');
+    const details = encodeURIComponent((slot.haircutType||'')+(slot.note? ' — "'+slot.note+'"':''));
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
+  }
+
   // ---- music widget ----
   function renderMusicWidget(){
     const widget = document.getElementById('musicWidget');
-    let open = false;
+    let open = true;
     function paint(){
       widget.innerHTML='';
       if(open){
         const panel=document.createElement('div'); panel.className='music-panel';
-        panel.innerHTML=`<div class="cap">🎵 Myself — NAV</div>`;
+        panel.innerHTML=`<div class="cap">🎵 Skepta — tap play to start</div>`;
         const iframe=document.createElement('iframe');
-        iframe.src='https://open.spotify.com/embed/track/0OPfZM09RUjE46nIeJGCfX';
-        iframe.width='100%'; iframe.height='80'; iframe.frameBorder='0';
+        iframe.src='https://open.spotify.com/embed/artist/2p1fiYHYiXz9qi0JJyxBzN';
+        iframe.width='100%'; iframe.height='152'; iframe.frameBorder='0';
         iframe.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
         iframe.loading='lazy';
         iframe.style.borderRadius='10px';
