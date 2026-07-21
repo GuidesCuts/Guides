@@ -246,10 +246,6 @@ window.storage = {
       const s = await window.storage.get('schedule', true);
       schedule = s? JSON.parse(s.value) : [];
     }catch(e){ schedule = []; }
-    if(schedule.length===0){
-      schedule = seedPlaceholderWeeks();
-      await saveSchedule();
-    }
     render();
   }
   async function saveSchedule(){
