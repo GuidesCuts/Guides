@@ -334,8 +334,27 @@ window.storage = {
     slot.residentType=clientResidentType; slot.price = clientResidentType==='Baxter'? 10 : 15;
     await saveSchedule();
     sendBookingEmail(slot);
+    sendToSheet(slot);
     step='success';
     render();
+  }
+
+  function sendToSheet(slot){
+    fetch('https://script.google.com/macros/s/AKfycbxQNRH-Pj0INt3ywcb02l7rSgpDOhFBjSYc1TvPsMnNSg_sNDIu3Mxk_5UHVXLkNF1E/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        date: slot.date,
+        clientName: slot.clientName,
+        contactMethod: slot.contactMethod,
+        contactValue: slot.contactValue,
+        haircutType: slot.haircutType,
+        residentType: slot.residentType,
+        price: slot.price,
+        notes: slot.note || ''
+      })
+    }).catch(()=>{ /* booking already saved either way; sheet sync is best-effort */ });
   }
 
   function sendBookingEmail(slot){
