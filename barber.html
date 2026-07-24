@@ -412,7 +412,7 @@ window.storage = {
     } else {
       info.innerHTML=`
         <div class="who">${escapeHtml(slot.clientName)}</div>
-        <div class="meta">${escapeHtml(slot.haircutType||'')}</div>
+        <div class="meta">${escapeHtml(slot.haircutType||'')}${slot.price? ' — $'+slot.price : ''}${slot.residentType? ' ('+escapeHtml(slot.residentType)+')' : ''}</div>
         ${slot.contactValue? `<div class="meta">${escapeHtml(slot.contactMethod||'')}: ${escapeHtml(slot.contactValue)}</div>` : ''}
         ${slot.note? `<div class="note">"${escapeHtml(slot.note)}"</div>` : ''}
         ${slot.photo? `<img src="${slot.photo}" style="max-width:70px;border-radius:6px;margin-top:6px;display:block;border:1px solid var(--border);">` : ''}

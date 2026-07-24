@@ -57,6 +57,7 @@
     background:var(--accent-soft);border:1px solid #CDEEDD;border-radius:12px;
     padding:12px 14px;
   }
+  .price-pill.selected{border:2px solid var(--accent);background:#D4F0E2;}
   .price-pill .amount{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--accent-dark);}
   .price-pill .who{font-size:13px;color:var(--text-dim);margin-top:2px;}
 
@@ -257,6 +258,7 @@ window.storage = {
   let clientName = '';
   let clientContactMethod = 'Phone';
   let clientContactValue = '';
+  let clientResidentType = '';
   let weekStart = mondayOf(new Date());
   let toastMsg = null;
   let toastTimer = null;
@@ -329,6 +331,7 @@ window.storage = {
     if(!slot || slot.status!=='open'){ showToast('That slot just got taken'); step='pick'; pendingSlotId=null; render(); return; }
     slot.status='booked'; slot.clientName=clientName.trim(); slot.haircutType=pendingType; slot.note=pendingNote.trim(); slot.photo=pendingPhoto;
     slot.contactMethod=clientContactMethod; slot.contactValue=clientContactValue.trim();
+    slot.residentType=clientResidentType; slot.price = clientResidentType==='Baxter'? 10 : 15;
     await saveSchedule();
     sendBookingEmail(slot);
     step='success';
@@ -402,11 +405,24 @@ window.storage = {
     wrap.appendChild(stepDots(0));
 
     const priceRow=document.createElement('div'); priceRow.className='price-row';
-    priceRow.innerHTML=`
-      <div class="price-pill"><div class="amount">$10</div><div class="who">Baxter residents</div></div>
-      <div class="price-pill"><div class="amount">$15</div><div class="who">Outside guests</div></div>
-    `;
+    const baxterPill=document.createElement('div');
+    baxterPill.className='price-pill'+(clientResidentType==='Baxter'?' selected':'');
+    baxterPill.style.cursor='pointer';
+    baxterPill.innerHTML=`<div class="amount">$10</div><div class="who">Baxter residents</div>`;
+    baxterPill.onclick=()=>{ clientResidentType='Baxter'; render(); };
+    const outsidePill=document.createElement('div');
+    outsidePill.className='price-pill'+(clientResidentType==='Outside'?' selected':'');
+    outsidePill.style.cursor='pointer';
+    outsidePill.innerHTML=`<div class="amount">$15</div><div class="who">Outside guests</div>`;
+    outsidePill.onclick=()=>{ clientResidentType='Outside'; render(); };
+    priceRow.appendChild(baxterPill);
+    priceRow.appendChild(outsidePill);
     wrap.appendChild(priceRow);
+
+    const residentHint=document.createElement('div'); residentHint.className='name-hint'+(clientResidentType? ' ok':'');
+    residentHint.style.marginTop='-16px';
+    residentHint.textContent = clientResidentType? 'Looks good.' : 'Tap one above — required';
+    wrap.appendChild(residentHint);
 
     const nameRow=document.createElement('div');
     nameRow.className='name-row'+(clientName.trim()? ' filled':'');
@@ -524,6 +540,7 @@ window.storage = {
             chip.onclick=()=>{
               if(!clientName.trim()){ showToast('Add your name up top first'); return; }
               if(!clientContactValue.trim()){ showToast('Add how we can reach you first'); return; }
+              if(!clientResidentType){ showToast('Select Baxter resident or outside guest first'); return; }
               pendingSlotId=slot.id; step='type'; render();
             };
           } else {
@@ -653,6 +670,7 @@ window.storage = {
     const rows=[
       ['Name', clientName.trim()],
       ['Contact', clientContactMethod+' — '+clientContactValue.trim()],
+      ['Type', clientResidentType==='Baxter'? 'Baxter resident ($10)' : 'Outside guest ($15)'],
       ['When', fmtFull(slot.date, slot.time)],
       ['Haircut', pendingType],
       ['Notes', pendingNote || '—']
